@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<title>D55 forgalmi játék</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+    body {
+        font-family: sans-serif;
+        background: #1f4894;
+        margin: 0;
+        padding: 0;
+        color: #fff;
+        overflow-x: auto;
+    }
+
+    #timer {
+        font-size: 22px;
+        font-weight: bold;
+        color: #ffeb3b;
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    svg {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .lin { stroke: #000000; stroke-width: 14; stroke-linecap: round; }
+    .track { stroke: #ccc; stroke-width: 14; stroke-linecap: round; }
+    .switch { stroke: #fff; stroke-width: 14; stroke-linecap: round; }
+    .locked { stroke: #ff9800 !important; }
+    .signal-stop { fill: red; stroke: black; stroke-width: 2; }
+    .signal-go { fill: #00cc00; stroke: black; stroke-width: 2; }
+    .train { fill: #1976d2; stroke: #0d47a1; stroke-width: 4; rx: 3; ry: 3; }
+
+    #panel {
+        padding: 10px 15px;
+        background: #333;
+        border-bottom: 2px solid #444;
+    }
+
+    #taskBox, #errorBox {
+        background:#fff;
+        color:#000;
+    }
+
+    /* ÚTVONALÁLLÍTÓ SOR */
+    #d55-route-panel {
+        background: #0f4d0f;
+        color: #fff;
+        padding: 15px;
+        border-top: 3px solid #666;
+        border-bottom: 3px solid #666;
+        display: flex;
+        justify-content: space-around;
+        font-size: 18px;
+    }
+    .route-group {
+        text-align: center;
+    }
+
+    /* VÁLTÓÁLLÍTÓ SOR – PULT LEGALJA */
+    #d55-switch-panel {
+        background: #0f4d0f;
+        color: #fff;
+        padding: 20px;
+        border-top: 3px solid #666;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .switch-column {
+        width: 45%;
+    }
+
+    .switch-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+        text-decoration: underline;
+    }
+
+    .switch-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .switch-label {
+        width: 50px;
+        font-size: 18px;
+        margin-right: 10px;
+        text-align: right;
+    }
+
+    button {
+        background: #222;
+        color: #fff;
+        border: 1px solid #666;
+        padding: 6px 12px;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #444;
+    }
+
+    #rotateWarning {
+        display: none;
+        position: fixed;
+        top: 15;
+        left: 15;
+        width: 100%;
+        padding: 20px;
+        background: #c6288;
+        color: white;
+        font-size: 0px;
+        text-align: center;
+        z-index: 9999;
+    }
+
+    @media (max-width: 700px) {
+        #d55-route-panel, #d55-switch-panel {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .switch-column {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 16px;
+            font-size: 16px;
+        }
+
+        #scene {
+            width: 120%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="rotateWarning">
+    📱 Kérlek, fordítsd el a telefont fekvő módba a jobb láthatóságért!
+</div>
+
+
+
+<!-- FELADATOK ÉS HIBÁK FELÜL -->
+<div id="panel">
+    <strong>Feladat:</strong>
+    <div id="taskBox" style="padding:4px; border:1px solid #aaa; width:350px; margin-bottom:5px;">
+        -
+    </div>
+
+    <strong>Hibák:</strong>
+    <div id="errorBox" style="padding:5px; border:1px solid #aaa; width:350px; height:50px; overflow-y:auto;">
+        Nincs hiba.
+    </div>
+</div>
+<div id="timer">Hátralévő idő: 90 mp</div>
+<!-- VÁGÁNYRAJZ -->
+<svg id="scene" viewBox="0 0 1200 300" style="width:100%; height:auto;">
+    <rect x="0" y="0" width="1200" height="500" fill="#0f4d0f"/>
+
+    <text x="500" y="30" font-size="22" fill="#fff" font-weight="bold"></text>
+
+    <text x="100" y="50" font-size="24" font-weight="bold" fill="#fff">Szeged</text>
+    <text x="900" y="50" font-size="28" font-weight="bold" fill="#fff">Kecskemét</text>
+    <text x="350" y="50" font-size="35" font-weight="bold" fill="#fff">Gyere, irányítsd a vonatokat! </text>
+
+
+    <text x="50" y="125" font-size="16" fill="#fff">1. vg.</text>
+    <text x="50" y="205" font-size="16" fill="#fff">2. vg.</text>
+    <text x="50" y="285" font-size="16" fill="#fff">3. vg.</text>
+    <text x="370" y="240" font-size="16" fill="#fff">4. váltó</text>
+    <text x="500" y="175" font-size="16" fill="#fff">2. váltó</text>
+    <text x="780" y="240" font-size="16" fill="#fff">4. váltó</text>
+    <text x="660" y="240" font-size="16" fill="#fff">2. váltó</text>
+    
+    <text x="1120" y="125" font-size="16" fill="#fff">1. vg.</text>
+    <text x="1120" y="205" font-size="16" fill="#fff">2. vg.</text>
+    <text x="1120" y="285" font-size="16" fill="#fff">3. vg.</text>
+
+    <!-- Szeged 3 vágány -->
+    <line x1="100" y1="120" x2="450" y2="120" class="track"/>
+    <line x1="550" y1="200" x2="425" y2="200" class="track"/>
+    <line x1="100" y1="200" x2="440" y2="200" class="track"/>
+    <line x1="100" y1="280" x2="430" y2="280" class="track"/>
+
+    <!-- Kecskemét 3 vágány -->
+
+    <line x1="750" y1="120" x2="1100" y2="120" class="track"/>
+    <line x1="750" y1="200" x2="1100" y2="200" class="track"/>
+    <line x1="770" y1="280" x2="1100" y2="280" class="track"/>
+    <line x1="500" y1="240" x2="460" y2="240" class="lin"/>
+    <line x1="670" y1="160" x2="710" y2="160" class="lin"/>
+    
+    <!-- Nyíltvonal -->
+    <line x1="450" y1="200" x2="770" y2="200" class="track"/>
+
+    <!-- Szeged váltók -->
+    <line id="szTop" x1="452" y1="120" x2="500" y2="200" class="switch"/>
+    <line id="szStraight" x1="430" y1="200" x2="400" y2="200" class="switch"/>
+    <line id="szBottom" x1="420" y1="280" x2="450" y2="200" class="switch"/>
+
+    <!-- Kecskemét váltók -->
+    <line id="kkTop" x1="750" y1="120" x2="720" y2="200" class="switch"/>
+    <line id="kkStraight" x1="770" y1="200" x2="750" y2="200" class="switch"/>
+    <line id="kkBottom" x1="770" y1="280" x2="750" y2="200" class="switch"/>
+
+    <!-- Jelzők -->
+    <circle id="szSignal" cx="500" cy="240" r="12" class="signal-stop"/>
+    <circle id="kkSignal" cx="670" cy="160" r="12" class="signal-stop"/>
+
+    <!-- Vonatok -->
+    <g id="trains"></g>
+</svg>
+
+<!-- ÚTVONALÁLLÍTÓ SOR -->
+<div id="d55-route-panel">
+    <div class="route-group">
+        Szeged → Kecskemét:
+        <button id="btnRouteSzeged">Jelzőállítás</button>
+    </div>
+
+    <div class="route-group">
+        Kecskemét → Szeged:
+        <button id="btnRouteKecskemet">Jelzőállítás</button>
+    </div>
+    
+</div>
+
+<!-- VÁLTÓÁLLÍTÓ SOR – PULT LEGALJA -->
+<div id="d55-switch-panel">
+
+    <!-- SZEGED -->
+    <div class="switch-column">
+        <div class="switch-title">Szeged váltók</div>
+
+        <div class="switch-row">
+            <span class="switch-label">2-es</span>
+            <button id="btnSzegedTop">Állító gomb</button>
+        </div>
+
+        <div class="switch-row">
+            <span class="switch-label">4-es</span>
+            <button id="btnSzegedBottom">Állító gomb</button>
+        </div>
+    </div>
+
+    <!-- KECSKEMÉT -->
+    <div class="switch-column">
+        <div class="switch-title">Kecskemét váltók</div>
+
+        <div class="switch-row">
+            <span class="switch-label">2-es</span>
+            <button id="btnKecskemetTop">Állító gomb</button>
+        </div>
+
+        <div class="switch-row">
+            <span class="switch-label">4-es</span>
+            <button id="btnKecskemetBottom">Állító gomb</button>
+        </div>
+    </div>
+
+</div>
+ 
+    <header>
+  <img src="images/mav-szarnyaskerek.png" alt="MÁV Forgalomirányítás játék logó" width="120">
+  <h1>MÁV PM Forgalomirányítás</h1>
+</header>
+
+<script>
+// ---------------- ÁLLAPOT ----------------
+const state = {
+    errors: 0,
+    lineOccupied: false,
+    gameOver: false,
+
+    routes: {
+        SzegedToKecskemet: { active: false, lockedSwitches: [] },
+        KecskemetToSzeged: { active: false, lockedSwitches: [] }
+    },
+
+    stations: {
+        Szeged: {
+            top: "straight",
+            bottom: "straight",
+            signal: "stop",
+            tracks: [true, false, true]
+        },
+        Kecskemet: {
+            top: "straight",
+            bottom: "straight",
+            signal: "stop",
+            tracks: [false, true, false]
+        }
+    },
+
+    trains: [
+        { id: 1, station: "Szeged",    track: 0, location: "station", progress: 0, direction: "SzegedToKecskemet",    speed: 0.4 },
+        { id: 2, station: "Szeged",    track: 2, location: "station", progress: 0, direction: "SzegedToKecskemet",    speed: 0.4 },
+        { id: 3, station: "Kecskemet", track: 1, location: "station", progress: 0, direction: "KecskemetToSzeged",    speed: 0.4 }
+    ],
+    log:[]
+};
+
+// ---------------- IDŐZÍTŐ ----------------
+let timeLeft = 90;
+let timerInterval = null;
+
+function startTimer() {
+    const timerDisplay = document.getElementById("timer");
+    timerDisplay.textContent = "Hátralévő idő: " + timeLeft + " mp";
+
+    timerInterval = setInterval(() => {
+        if (state.gameOver) {
+            clearInterval(timerInterval);
+            return;
+        }
+
+        timeLeft--;
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            timerDisplay.textContent = "Lejárt az idő!";
+            clearInterval(timerInterval);
+            endGame();
+        } else {
+            timerDisplay.textContent = "Hátralévő idő: " + timeLeft + " mp";
+        }
+    }, 1000);
+}
+
+function endGame() {
+    state.gameOver = true;
+    alert("Lejárt az idő! A játék véget ért.");
+}
+
+// ---------------- ORIENTÁCIÓ FIGYELÉS ----------------
+function checkOrientation() {
+    const warn = document.getElementById("rotateWarning");
+    if (window.innerHeight > window.innerWidth) {
+        warn.style.display = "block";
+    } else {
+        warn.style.display = "none";
+    }
+}
+
+window.addEventListener("resize", checkOrientation);
+window.addEventListener("orientationchange", checkOrientation);
+
+// ---------------- HIBAPONT ----------------
+function addError(msg) {
+    state.errors++;
+    state.log.push(msg);
+
+    const box = document.getElementById("errorBox");
+
+    if (state.log.length === 1) {
+        box.textContent = "1. " + msg;
+    } else {
+        box.textContent += "\n" + state.log.length + ". " + msg;
+    }
+}
+
+// ---------------- VÁLTÓFELVÁGÁS ELLENŐRZÉS ----------------
+function checkSwitchForTrain(train) {
+    const st = state.stations[train.station];
+
+    if (train.track === 0 && st.top !== "diverging") {
+        addError("Váltófelvágás: a felső váltó nem kitérő állásban volt!");
+        state.errors += 199;
+    }
+
+    if (train.track === 1 && !(st.top === "straight" && st.bottom === "straight")) {
+        addError("Váltófelvágás: a középső vágányhoz mindkét váltónak egyenesben kell lennie!");
+        state.errors += 199;
+    }
+
+    if (train.track === 2 && st.bottom !== "diverging") {
+        addError("Váltófelvágás: az alsó váltó nem kitérő állásban volt!");
+        state.errors += 199;
+    }
+}
+
+// ---------------- VÁLTÓK GRAFIKA ----------------
+function updateSwitchGraphics() {
+    const sz = state.stations.Szeged;
+    const kk = state.stations.Kecskemet;
+
+    document.getElementById("szTop").style.opacity = sz.top === "diverging" ? 1 : 0.2;
+    document.getElementById("szBottom").style.opacity = sz.bottom === "diverging" ? 1 : 0.2;
+    document.getElementById("szStraight").style.opacity = (sz.top === "straight" && sz.bottom === "straight") ? 1 : 0.2;
+
+    document.getElementById("kkTop").style.opacity = kk.top === "diverging" ? 1 : 0.2;
+    document.getElementById("kkBottom").style.opacity = kk.bottom === "diverging" ? 1 : 0.2;
+    document.getElementById("kkStraight").style.opacity = (kk.top === "straight" && kk.bottom === "straight") ? 1 : 0.2;
+
+    ["szTop","szBottom","kkTop","kkBottom","szStraight","kkStraight"].forEach(id=>{
+        document.getElementById(id).classList.remove("locked");
+    });
+
+    state.routes.SzegedToKecskemet.lockedSwitches.forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.classList.add("locked");
+    });
+    state.routes.KecskemetToSzeged.lockedSwitches.forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.classList.add("locked");
+    });
+}
+
+// ---------------- JELZŐK ----------------
+function updateSignals() {
+    document.getElementById("szSignal").setAttribute("class",
+        state.stations.Szeged.signal === "go" ? "signal-go" : "signal-stop");
+    document.getElementById("kkSignal").setAttribute("class",
+        state.stations.Kecskemet.signal === "go" ? "signal-go" : "signal-stop");
+}
+
+// ---------------- ÉRKEZŐ VÁGÁNY ----------------
+function getArrivalTrack(stationName) {
+    const st = state.stations[stationName];
+    if (st.top === "diverging") return 0;
+    if (st.bottom === "diverging") return 2;
+    return 1;
+}
+
+// ---------------- ÚTVONALBEÁLLÍTÁS (D55) ----------------
+function canSetRoute(direction) {
+    if (state.gameOver) return false;
+
+    const from = direction === "SzegedToKecskemet" ? "Szeged" : "Kecskemet";
+    const to   = direction === "SzegedToKecskemet" ? "Kecskemet" : "Szeged";
+
+    if (state.routes[direction].active) return false;
+    const opposite = direction === "SzegedToKecskemet" ? "KecskemetToSzeged" : "SzegedToKecskemet";
+    if (state.routes[opposite].active) return false;
+    if (state.lineOccupied) return false;
+
+    const train = state.trains.find(t => t.station === from && t.location === "station");
+    if (!train) return false;
+
+    const st = state.stations[from];
+    if (train.track === 0 && st.top !== "diverging") return false;
+    if (train.track === 2 && st.bottom !== "diverging") return false;
+    if (train.track === 1 && !(st.top === "straight" && st.bottom === "straight")) return false;
+
+    const targetTrack = getArrivalTrack(to);
+    if (state.stations[to].tracks[targetTrack]) return false;
+
+    return true;
+}
+
+function setRoute(direction) {
+    if (!canSetRoute(direction)) {
+        addError("Helytelen vágányút beállítás");
+        return;
+    }
+
+    const from = direction === "SzegedToKecskemet" ? "Szeged" : "Kecskemet";
+
+    state.routes[direction].active = true;
+    state.routes[direction].lockedSwitches =
+        from === "Szeged"
+        ? ["szTop","szBottom","szStraight"]
+        : ["kkTop","kkBottom","kkStraight"];
+
+    state.stations[from].signal = "go";
+    updateSignals();
+    updateSwitchGraphics();
+
+    const train = state.trains.find(t => t.station === from && t.location === "station");
+    if (train) {
+        if (!checkTask(train)) return;
+        checkSwitchForTrain(train);
+        depart(train);
+    }
+}
+
+// ---------------- INDULÁS / ÉRKEZÉS ----------------
+function depart(train) {
+    train.location = "depart";
+    train.progress = 0;
+    state.lineOccupied = true;
+    state.stations[train.station].tracks[train.track] = false;
+}
+
+function isTaskTrain(train) {
+    const t = getCurrentTask();
+    return (
+        train.station === t.fromStation &&
+        (train.track + 1) === t.fromTrack &&
+        train.location === "station"
+    );
+}
+
+function handleArrival(train) {
+    const target = train.direction === "SzegedToKecskemet" ? "Kecskemet" : "Szeged";
+    const track = getArrivalTrack(target);
+
+    if (state.stations[target].tracks[track]) {
+        addError("Foglaltra járt be vonat!");
+    } else {
+        state.stations[target].tracks[track] = true;
+        train.track = track;
+    }
+
+    train.station = target;
+    train.location = "station";
+    train.progress = 0;
+
+    const dir = train.direction;
+    state.routes[dir].active = false;
+    state.routes[dir].lockedSwitches = [];
+
+    const from = dir === "SzegedToKecskemet" ? "Szeged" : "Kecskemet";
+    state.stations[from].signal = "stop";
+    state.lineOccupied = false;
+
+    train.direction = dir === "SzegedToKecskemet" ? "KecskemetToSzeged" : "SzegedToKecskemet";
+
+    updateSignals();
+    updateSwitchGraphics();
+}
+
+// ---------------- VÁLTÓK GOMBOK ----------------
+function toggleSwitch(station, which) {
+    if (state.routes.SzegedToKecskemet.active || state.routes.KecskemetToSzeged.active) {
+        addError("Lezárt váltó állítása tilos");
+        return;
+    }
+    if (state.gameOver) return;
+
+    const sw = state.stations[station][which];
+    state.stations[station][which] = sw === "straight" ? "diverging" : "straight";
+    updateSwitchGraphics();
+}
+
+document.getElementById("btnSzegedTop").onclick = () => toggleSwitch("Szeged", "top");
+document.getElementById("btnSzegedBottom").onclick = () => toggleSwitch("Szeged", "bottom");
+document.getElementById("btnKecskemetTop").onclick = () => toggleSwitch("Kecskemet", "top");
+document.getElementById("btnKecskemetBottom").onclick = () => toggleSwitch("Kecskemet", "bottom");
+
+document.getElementById("btnRouteSzeged").onclick = () => setRoute("SzegedToKecskemet");
+document.getElementById("btnRouteKecskemet").onclick = () => setRoute("KecskemetToSzeged");
+
+// ---------------- FELADATLISTA ----------------
+const tasks = [
+    { fromStation: "Szeged",    fromTrack: 1, toStation: "Kecskemet", toTrack: 1 },
+    { fromStation: "Szeged",    fromTrack: 3, toStation: "Kecskemet", toTrack: 3 },
+    { fromStation: "Kecskemet", fromTrack: 1, toStation: "Szeged",    toTrack: 2 },
+    { fromStation: "Kecskemet", fromTrack: 3, toStation: "Szeged",    toTrack: 3 },
+    { fromStation: "Kecskemet", fromTrack: 2, toStation: "Szeged",    toTrack: 1 }
+];
+
+let currentTaskIndex = 0;
+
+function getCurrentTask() {
+    return tasks[currentTaskIndex];
+}
+
+function showTask() {
+    const t = getCurrentTask();
+    const text =
+        `Következő feladat: ${t.fromStation} ${t.fromTrack}. vágány → ` +
+        `${t.toStation} ${t.toTrack}. vágány`;
+
+    document.getElementById("taskBox").textContent = text;
+}
+
+// ---------------- FELADAT ELLENŐRZÉS ----------------
+function checkTask(train) {
+    const t = getCurrentTask();
+
+    if (
+        train.station === t.fromStation &&
+        (train.track + 1) === t.fromTrack
+    ) {
+        return true;
+    }
+
+    addError("Rossz vonat indult el!");
+    return false;
+}
+
+function completeTask(train) {
+    const t = getCurrentTask();
+
+    if (
+        train.station === t.toStation &&
+        (train.track + 1) === t.toTrack
+    ) {
+        currentTaskIndex++;
+        if (currentTaskIndex >= tasks.length) {
+            showFinalLog();
+            state.gameOver = true;
+            if (timerInterval) clearInterval(timerInterval);
+        } else {
+            showTask();
+        }
+    }
+}
+
+// ---------------- SEGÉD: PONT POLYLINE-ON ----------------
+function getPointOnPolyline(points, t) {
+    let segLengths = [];
+    let total = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+        const dx = points[i+1].x - points[i].x;
+        const dy = points[i+1].y - points[i].y;
+        const len = Math.hypot(dx, dy);
+        segLengths.push(len);
+        total += len;
+    }
+    if (total === 0) return { x: points[0].x, y: points[0].y, angle: 0 };
+
+    let dist = t * total;
+    for (let i = 0; i < segLengths.length; i++) {
+        if (dist <= segLengths[i]) {
+            const p0 = points[i];
+            const p1 = points[i+1];
+            const r = segLengths[i] === 0 ? 0 : dist / segLengths[i];
+            const x = p0.x + (p1.x - p0.x) * r;
+            const y = p0.y + (p1.y - p0.y) * r;
+            const angle = Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180 / Math.PI;
+            return { x, y, angle };
+        }
+        dist -= segLengths[i];
+    }
+    const last = points[points.length - 1];
+    const prev = points[points.length - 2];
+    const angle = Math.atan2(last.y - prev.y, last.x - prev.x) * 180 / Math.PI;
+    return { x: last.x, y: last.y, angle };
+}
+
+// ---------------- SEGÉD: BEZIER MINTAVÉTEL ----------------
+function sampleBezier(p0, p1, p2, p3, steps) {
+    const pts = [];
+    for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x =
+            Math.pow(1 - t, 3) * p0.x +
+            3 * Math.pow(1 - t, 2) * t * p1.x +
+            3 * (1 - t) * Math.pow(t, 2) * p2.x +
+            Math.pow(t, 3) * p3.x;
+        const y =
+            Math.pow(1 - t, 3) * p0.y +
+            3 * Math.pow(1 - t, 2) * t * p1.y +
+            3 * (1 - t) * Math.pow(t, 2) * p2.y +
+            Math.pow(t, 3) * p3.y;
+        pts.push({ x, y });
+    }
+    return pts;
+}
+
+// ---------------- ÚTVONALAK A GRAFIKUS VÁGÁNYON (ÍVES VÁLTÓK) ----------------
+function getDepartPath(train) {
+
+    if (train.station === "Szeged") {
+
+        if (train.track === 0) {
+            const straight = [
+                { x: 250, y: 120 },
+                { x: 452, y: 120 }
+            ];
+            const bez = sampleBezier(
+                { x: 452, y: 120 },
+                { x: 460, y: 135 },
+                { x: 480, y: 165 },
+                { x: 500, y: 200 },
+                10
+            );
+            return straight.concat(bez);
+        }
+
+        if (train.track === 1) {
+            return [
+                { x: 350, y: 200 },
+                { x: 430, y: 200 },
+                { x: 450, y: 200 }
+            ];
+        }
+
+        const straight3 = [
+            { x: 230, y: 280 },
+            { x: 430, y: 280 }
+        ];
+        const bez3 = sampleBezier(
+            { x: 430, y: 280 },
+            { x: 435, y: 265 },
+            { x: 445, y: 230 },
+            { x: 450, y: 200 },
+            10
+        );
+        return straight3.concat(bez3);
+    }
+
+    if (train.track === 0) {
+        const straight = [
+            { x: 850, y: 120 },
+            { x: 750, y: 120 }
+        ];
+        const bez = sampleBezier(
+            { x: 750, y: 120 },
+            { x: 745, y: 135 },
+            { x: 730, y: 170 },
+            { x: 720, y: 200 },
+            10
+        );
+        return straight.concat(bez);
+    }
+
+    if (train.track === 1) {
+        return [
+            { x: 850, y: 200 },
+            { x: 770, y: 200 },
+            { x: 750, y: 200 }
+        ];
+    }
+
+    const straight3 = [
+        { x: 870, y: 280 },
+        { x: 770, y: 280 }
+    ];
+    const bez3 = sampleBezier(
+        { x: 770, y: 280 },
+        { x: 765, y: 265 },
+        { x: 755, y: 230 },
+        { x: 750, y: 200 },
+        10
+    );
+    return straight3.concat(bez3);
+}
+
+function getLinePath(train) {
+    if (train.direction === "SzegedToKecskemet") {
+        return [
+            { x: 500, y: 200 },
+            { x: 720, y: 200 }
+        ];
+    }
+    return [
+        { x: 720, y: 200 },
+        { x: 500, y: 200 }
+    ];
+}
+
+function getArrivePath(train) {
+    const goingToK = train.direction === "SzegedToKecskemet";
+    const track = getArrivalTrack(goingToK ? "Kecskemet" : "Szeged");
+
+    if (goingToK) {
+
+        if (track === 0) {
+            const bez = sampleBezier(
+                { x: 720, y: 200 },
+                { x: 725, y: 185 },
+                { x: 740, y: 145 },
+                { x: 750, y: 120 },
+                10
+            );
+            const straight = [
+                { x: 750, y: 120 },
+                { x: 850, y: 120 }
+            ];
+            return bez.concat(straight);
+        }
+
+        if (track === 1) {
+            return [
+                { x: 720, y: 200 },
+                { x: 750, y: 200 },
+                { x: 850, y: 200 }
+            ];
+        }
+
+        const bez3 = sampleBezier(
+            { x: 720, y: 200 },
+            { x: 730, y: 215 },
+            { x: 760, y: 260 },
+            { x: 770, y: 280 },
+            10
+        );
+        const straight3 = [
+            { x: 770, y: 280 },
+            { x: 870, y: 280 }
+        ];
+        return bez3.concat(straight3);
+    }
+
+    if (track === 0) {
+        const bez = sampleBezier(
+            { x: 500, y: 200 },
+            { x: 490, y: 185 },
+            { x: 460, y: 145 },
+            { x: 452, y: 120 },
+            10
+        );
+        const straight = [
+            { x: 452, y: 120 },
+            { x: 250, y: 120 }
+        ];
+        return bez.concat(straight);
+    }
+
+    if (track === 1) {
+        return [
+            { x: 500, y: 200 },
+            { x: 450, y: 200 },
+            { x: 350, y: 200 }
+        ];
+    }
+
+    const bez3 = sampleBezier(
+        { x: 500, y: 200 },
+        { x: 485, y: 215 },
+        { x: 445, y: 260 },
+        { x: 430, y: 280 },
+        10
+    );
+    const straight3 = [
+        { x: 430, y: 280 },
+        { x: 230, y: 280 }
+    ];
+    return bez3.concat(straight3);
+}
+
+// ---------------- SZERELVÉNYRAJZ ----------------
+function drawTrain(g, x, y, angle) {
+    const loco = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    loco.setAttribute("width", 30);
+    loco.setAttribute("height", 18);
+    loco.setAttribute("class", "train");
+
+    const car = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    car.setAttribute("width", 30);
+    car.setAttribute("height", 18);
+    car.setAttribute("class", "train");
+
+    const rad = angle * Math.PI / 180;
+    const dx = Math.cos(rad) * -35;
+    const dy = Math.sin(rad) * -35;
+
+    loco.setAttribute("transform", `translate(${x},${y}) rotate(${angle},15,9)`);
+    car.setAttribute("transform", `translate(${x+dx},${y+dy}) rotate(${angle},15,9)`);
+
+    g.appendChild(loco);
+    g.appendChild(car);
+}
+
+// ---------------- VONATOK KIRAJZOLÁSA ----------------
+function renderTrains() {
+    const g = document.getElementById("trains");
+    g.innerHTML = "";
+
+    state.trains.forEach(train => {
+        let x = 0, y = 0, angle = 0;
+
+        if (train.location === "station") {
+
+            if (train.station === "Szeged") {
+                if (train.track === 0) { x = 250; y = 120 - 9; }
+                if (train.track === 1) { x = 350; y = 200 - 9; }
+                if (train.track === 2) { x = 230; y = 280 - 9; }
+
+                angle = (train.direction === "SzegedToKecskemet") ? 0 : 180;
+
+            } else {
+                if (train.track === 0) { x = 850; y = 120 - 9; }
+                if (train.track === 1) { x = 850; y = 200 - 9; }
+                if (train.track === 2) { x = 870; y = 280 - 9; }
+
+                angle = (train.direction === "KecskemetToSzeged") ? 180 : 0;
+            }
+        }
+        else if (train.location === "depart") {
+            const pts = getDepartPath(train);
+            const p = getPointOnPolyline(pts, train.progress);
+            x = p.x; y = p.y; angle = p.angle;
+        }
+        else if (train.location === "line") {
+            const pts = getLinePath(train);
+            const p = getPointOnPolyline(pts, train.progress);
+            x = p.x; y = p.y; angle = p.angle;
+        }
+        else if (train.location === "arrive") {
+            const pts = getArrivePath(train);
+            const p = getPointOnPolyline(pts, train.progress);
+            x = p.x; y = p.y; angle = p.angle;
+        }
+
+        drawTrain(g, x, y, angle);
+
+        if (isTaskTrain(train)) {
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.textContent = "Induló vonat";
+            label.setAttribute("x", x);
+            label.setAttribute("y", y - 15);
+            label.setAttribute("font-size", "20");
+            label.setAttribute("fill", "#ffeb3b");
+            label.setAttribute("font-weight", "bold");
+            g.appendChild(label);
+        }
+    });
+}
+
+// ---------------- ANIMÁCIÓ ----------------
+let last = null;
+function loop(ts) {
+    if (state.gameOver) return;
+
+    if (!last) last = ts;
+    const dt = (ts - last) / 1000;
+    last = ts;
+
+    state.trains.forEach(train => {
+        if (train.location === "depart") {
+            train.progress += train.speed * dt;
+            if (train.progress >= 1) {
+                train.location = "line";
+                train.progress = 0;
+            }
+        } else if (train.location === "line") {
+            train.progress += train.speed * dt;
+            if (train.progress >= 1) {
+                train.location = "arrive";
+                train.progress = 0;
+            }
+        } else if (train.location === "arrive") {
+            train.progress += train.speed * dt;
+            if (train.progress >= 1) {
+                handleArrival(train);
+                completeTask(train);
+            }
+        }
+    });
+
+    renderTrains();
+    requestAnimationFrame(loop);
+}
+
+function showFinalLog() {
+    let rating = "";
+
+    if (state.errors === 0) {
+        rating = "Kiváló forgalmista";
+    } else if (state.errors === 1) {
+        rating = "Lelkes vasutas";
+    } else if (state.errors === 2) {
+        rating = "Előfordulnak nehéz napok";
+    } else {
+        rating = "Tudsz Te ennél jobbat is, próbáld újra";
+    }
+
+    let text = "Összes hibapont: " + state.errors + "\n\n";
+    text += "Hibák listája:\n";
+
+    if (state.log.length === 0) {
+        text += "Nem történt hiba.\n";
+    } else {
+        state.log.forEach((e, i) => {
+            text += (i+1) + ". " + e + "\n";
+        });
+    }
+
+    text += "\nÉrtékelés: " + rating;
+
+    alert(text);
+}
+
+// ---------------- INIT ----------------
+window.addEventListener("load", () => {
+    updateSwitchGraphics();
+    updateSignals();
+    renderTrains();
+    showTask();
+    startTimer();
+    checkOrientation();
+    requestAnimationFrame(loop);
+});
+</script>
+
+</body>
+</html>
