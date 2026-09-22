@@ -35,9 +35,9 @@
         margin: 0 auto;
     }
 
-    .lin { stroke: #000000; stroke-width: 14; stroke-linecap: round; }
-    .track { stroke: #ccc; stroke-width: 14; stroke-linecap: round; }
-    .switch { stroke: #fff; stroke-width: 14; stroke-linecap: round; }
+    .lin { stroke: #000000; stroke-width: 25; stroke-linecap: round; }
+    .track { stroke: #ccc; stroke-width: 25; stroke-linecap: round; }
+    .switch { stroke: #fff; stroke-width: 25; stroke-linecap: round; }
     .locked { stroke: #ff9800 !important; }
     .signal-stop { fill: red; stroke: black; stroke-width: 2; }
     .signal-go { fill: #00cc00; stroke: black; stroke-width: 2; }
@@ -138,54 +138,33 @@ button:active{
         z-index: 9999;
     }
 
-    @media (max-width: 900px) {
-    #btnRouteSzeged,
-    #btnRouteKecskemet {
-        width: 48%;
-        max-width: 48%;
-        display: inline-block;
-    }
+    @media (max-width:900px){
 
-}
-    body{
-        overflow-x:hidden;
-    }
+
 
     #panel{
-        order:2;
+        padding:6px;
+        font-size:13px;
+    }
+
+    #taskBox{
+        max-width:100%;
         font-size:14px;
+        margin-bottom:4px;
+    }
+
+    #errorBox{
+        height:40px;
+        font-size:12px;
     }
 
     #timer{
-        order:3;
-        margin:0;
-        padding:8px;
-        font-size:18px;
+        font-size:16px;
+        margin:4px 0;
+        padding:4px;
     }
 
-    #scene{
-        width:100%;
-        height:auto;
-        max-height:55vh;
-        display:block;
-    }
-
-    #d55-route-panel{
-        display:flex;
-        justifiy-content:center;
-        gap:20px;
-    }
-
-    #d55-switch-panel{
-        order:5;
-        flex-direction:column;
-        gap:10px;
-        padding:10px;
-    }
-
-    .switch-column{
-        width:100%;
-    }
+}
 /* Jelzőállító gombok */
 
 #btnRouteSzeged,
@@ -217,7 +196,9 @@ button:active{
 }
 
         #scene {
-            width: 120%;
+            width: 100%;
+            height:auto;
+			display:block;
         }
     }
 </style>
@@ -250,7 +231,7 @@ button:active{
 
 <!-- VÁGÁNYRAJZ -->
 <div id="trackContainer">
-<svg id="scene" viewBox="0 0 1200 300" style="width:100%; height:auto;">
+<svg id="scene" viewBox="0 0 1200 450" style="width:100%; height:auto;">
     <rect x="0" y="0" width="1200" height="500" fill="#0f4d0f"/>
 
     <text x="500" y="30" font-size="22" fill="#fff" font-weight="bold"></text>
@@ -260,48 +241,48 @@ button:active{
     <text x="350" y="50" font-size="35" font-weight="bold" fill="#fff">Gyere, irányítsd a vonatokat! </text>
 
 
-    <text x="50" y="125" font-size="16" fill="#fff">1. vg.</text>
-    <text x="50" y="205" font-size="16" fill="#fff">2. vg.</text>
-    <text x="50" y="285" font-size="16" fill="#fff">3. vg.</text>
+    <text x="50" y="115" font-size="24" fill="#fff">1. vg.</text>
+    <text x="50" y="225" font-size="24" fill="#fff">2. vg.</text>
+    <text x="50" y="340" font-size="24" fill="#fff">3. vg.</text>
     <text x="370" y="240" font-size="16" fill="#fff">4. váltó</text>
     <text x="500" y="175" font-size="16" fill="#fff">2. váltó</text>
     <text x="780" y="240" font-size="16" fill="#fff">4. váltó</text>
     <text x="660" y="240" font-size="16" fill="#fff">2. váltó</text>
     
-    <text x="1120" y="125" font-size="16" fill="#fff">1. vg.</text>
-    <text x="1120" y="205" font-size="16" fill="#fff">2. vg.</text>
-    <text x="1120" y="285" font-size="16" fill="#fff">3. vg.</text>
+    <text x="1120" y="115" font-size="24" fill="#fff">1. vg.</text>
+    <text x="1120" y="225" font-size="24" fill="#fff">2. vg.</text>
+    <text x="1120" y="340" font-size="24" fill="#fff">3. vg.</text>
 
     <!-- Szeged 3 vágány -->
-    <line x1="100" y1="120" x2="450" y2="120" class="track"/>
-    <line x1="550" y1="200" x2="425" y2="200" class="track"/>
-    <line x1="100" y1="200" x2="440" y2="200" class="track"/>
-    <line x1="100" y1="280" x2="430" y2="280" class="track"/>
+    <line x1="100" y1="140" x2="450" y2="140" class="track"/>
+    <line x1="550" y1="260" x2="425" y2="260" class="track"/>
+    <line x1="100" y1="260" x2="440" y2="260" class="track"/>
+    <line x1="100" y1="380" x2="430" y2="380" class="track"/>
 
     <!-- Kecskemét 3 vágány -->
 
-    <line x1="750" y1="120" x2="1100" y2="120" class="track"/>
-    <line x1="750" y1="200" x2="1100" y2="200" class="track"/>
-    <line x1="770" y1="280" x2="1100" y2="280" class="track"/>
-    <line x1="500" y1="240" x2="460" y2="240" class="lin"/>
-    <line x1="670" y1="160" x2="710" y2="160" class="lin"/>
+    <line x1="750" y1="140" x2="1100" y2="140" class="track"/>
+    <line x1="750" y1="260" x2="1100" y2="260" class="track"/>
+    <line x1="770" y1="380" x2="1100" y2="380" class="track"/>
+    <line x1="500" y1="320" x2="460" y2="320" class="lin"/>
+    <line x1="660" y1="190" x2="700" y2="190" class="lin"/>
     
     <!-- Nyíltvonal -->
-    <line x1="450" y1="200" x2="770" y2="200" class="track"/>
+    <line x1="450" y1="260" x2="770" y2="260" class="track"/>
 
     <!-- Szeged váltók -->
-    <line id="szTop" x1="452" y1="120" x2="500" y2="200" class="switch"/>
-    <line id="szStraight" x1="430" y1="200" x2="400" y2="200" class="switch"/>
-    <line id="szBottom" x1="420" y1="280" x2="450" y2="200" class="switch"/>
+    <line id="szTop" x1="452" y1="140" x2="500" y2="260" class="switch"/>
+    <line id="szStraight" x1="430" y1="260" x2="400" y2="260" class="switch"/>
+    <line id="szBottom" x1="420" y1="380" x2="450" y2="260" class="switch"/>
 
     <!-- Kecskemét váltók -->
-    <line id="kkTop" x1="750" y1="120" x2="720" y2="200" class="switch"/>
-    <line id="kkStraight" x1="770" y1="200" x2="750" y2="200" class="switch"/>
-    <line id="kkBottom" x1="770" y1="280" x2="750" y2="200" class="switch"/>
+    <line id="kkTop" x1="750" y1="140" x2="720" y2="260" class="switch"/>
+    <line id="kkStraight" x1="770" y1="260" x2="740" y2="260" class="switch"/>
+    <line id="kkBottom" x1="770" y1="380" x2="750" y2="260" class="switch"/>
 
     <!-- Jelzők -->
-    <circle id="szSignal" cx="500" cy="240" r="12" class="signal-stop"/>
-    <circle id="kkSignal" cx="670" cy="160" r="12" class="signal-stop"/>
+    <circle id="szSignal" cx="500" cy="320" r="12" class="signal-stop"/>
+    <circle id="kkSignal" cx="660" cy="190" r="12" class="signal-stop"/>
 
     <!-- Vonatok -->
     <g id="trains"></g>
