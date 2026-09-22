@@ -14,13 +14,15 @@
         overflow-x: auto;
     }
 
-    #timer {
-        font-size: 22px;
-        font-weight: bold;
-        color: #ffeb3b;
-        text-align: center;
-        margin: 10px 0;
-    }
+#timer{
+    font-size:22px;
+    font-weight:bold;
+    color:#ffeb3b;
+    text-align:center;
+    margin:10px 0;
+    background:#102e62;
+    padding:10px;
+}
 
     svg {
         display: block;
@@ -94,18 +96,25 @@
         text-align: right;
     }
 
-    button {
-        background: #222;
-        color: #fff;
-        border: 1px solid #666;
-        padding: 6px 12px;
-        margin-left: 10px;
-        cursor: pointer;
-    }
+    button{
+    background:#222;
+    color:#fff;
+    border:1px solid #666;
+    padding:8px 14px;
+    margin-left:10px;
+    cursor:pointer;
+    border-radius:6px;
+    transition:.2s;
+}
 
-    button:hover {
-        background: #444;
-    }
+button:hover{
+    background:#444;
+    transform:translateY(-1px);
+}
+
+button:active{
+    transform:translateY(1px);
+}
 
     #rotateWarning {
         display: none;
@@ -138,7 +147,7 @@
         }
 
         #scene {
-            width: 120%;
+            min-width: 1200%;
         }
     }
 </style>
@@ -459,24 +468,40 @@ function setRoute(direction) {
         return;
     }
 
-    const from = direction === "SzegedToKecskemet" ? "Szeged" : "Kecskemet";
+    const from =
+        direction === "SzegedToKecskemet"
+            ? "Szeged"
+            : "Kecskemet";
+
+    const train = state.trains.find(
+        t =>
+            t.station === from &&
+            t.location === "station"
+    );
+
+    if (!train) {
+        addError("Nincs indítható vonat.");
+        return;
+    }
+
+    if (!checkTask(train)) {
+        return;
+    }
 
     state.routes[direction].active = true;
+
     state.routes[direction].lockedSwitches =
         from === "Szeged"
-        ? ["szTop","szBottom","szStraight"]
-        : ["kkTop","kkBottom","kkStraight"];
+            ? ["szTop","szBottom","szStraight"]
+            : ["kkTop","kkBottom","kkStraight"];
 
     state.stations[from].signal = "go";
+
     updateSignals();
     updateSwitchGraphics();
 
-    const train = state.trains.find(t => t.station === from && t.location === "station");
-    if (train) {
-        if (!checkTask(train)) return;
-        checkSwitchForTrain(train);
-        depart(train);
-    }
+    checkSwitchForTrain(train);
+    depart(train);
 }
 
 // ---------------- INDULÁS / ÉRKEZÉS ----------------
