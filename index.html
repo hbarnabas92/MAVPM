@@ -13,6 +13,12 @@
         color: #fff;
         overflow-x: auto;
     }
+    
+#statusBar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
 #timer{
     font-size:22px;
@@ -47,18 +53,20 @@
         background:#fff;
         color:#000;
     }
+    
+    #trackContainer{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    background:#0f4d0f;
+	}
 
     /* ÚTVONALÁLLÍTÓ SOR */
     #d55-route-panel {
-        background: #0f4d0f;
-        color: #fff;
-        padding: 15px;
-        border-top: 3px solid #666;
-        border-bottom: 3px solid #666;
-        display: flex;
-        justify-content: space-around;
-        font-size: 18px;
-    }
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
     .route-group {
         text-align: center;
     }
@@ -131,7 +139,14 @@ button:active{
     }
 
     @media (max-width: 900px) {
+    #btnRouteSzeged,
+    #btnRouteKecskemet {
+        width: 48%;
+        max-width: 48%;
+        display: inline-block;
+    }
 
+}
     body{
         overflow-x:hidden;
     }
@@ -156,10 +171,9 @@ button:active{
     }
 
     #d55-route-panel{
-        order:4;
-        flex-direction:column;
-        gap:10px;
-        padding:10px;
+        display:flex;
+        justifiy-content:center;
+        gap:20px;
     }
 
     #d55-switch-panel{
@@ -172,7 +186,28 @@ button:active{
     .switch-column{
         width:100%;
     }
+/* Jelzőállító gombok */
 
+#btnRouteSzeged,
+#btnRouteKecskemet {
+    background: #c62828;
+    border: 2px solid #8e0000;
+    color: white;
+    width: 400px;          /* kb. fél szélesség */
+    max-width: 55%;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+#btnRouteSzeged:hover,
+#btnRouteKecskemet:hover {
+    background: #e53935;
+}
+
+#btnRouteSzeged:active,
+#btnRouteKecskemet:active {
+    background: #8e0000;
+}
     button{
         width:100%;
         margin:4px 0;
@@ -189,28 +224,32 @@ button:active{
 </head>
 <body>
 
-<div id="rotateWarning">
-    📱 Kérlek, fordítsd el a telefont fekvő módba a jobb láthatóságért!
+
+
+<div id="statusBar">
+
+    <div>
+        <strong>Feladat</strong>
+        <div id="taskBox"></div>
+    </div>
+
+    <div id="timer"></div>
+
 </div>
 
-
-
-<!-- FELADATOK ÉS HIBÁK FELÜL -->
-<div id="panel">
-    <strong>Feladat:</strong>
-    <div id="taskBox" style="padding:4px; border:1px solid #aaa; width:100%; max-width:350px; margin-bottom:5px;">
 
         -
     </div>
 
     <strong>Hibák:</strong>
-    <div id="errorBox" style="padding:5px; border:1px solid #aaa; width:100%; max-width:350px; height:50px; overflow-y:auto;">
+    <div id="errorBox" style="max-height:90px;overflow-y:auto;">
 
         Nincs hiba.
     </div>
 </div>
-<div id="timer">Hátralévő idő: 90 mp</div>
+
 <!-- VÁGÁNYRAJZ -->
+<div id="trackContainer">
 <svg id="scene" viewBox="0 0 1200 300" style="width:100%; height:auto;">
     <rect x="0" y="0" width="1200" height="500" fill="#0f4d0f"/>
 
@@ -271,13 +310,11 @@ button:active{
 <!-- ÚTVONALÁLLÍTÓ SOR -->
 <div id="d55-route-panel">
     <div class="route-group">
-        Szeged → Kecskemét:
-        <button id="btnRouteSzeged">Jelzőállítás</button>
+        <button id="btnRouteSzeged">Szeged kijárati jelző szabadra állítás</button>
     </div>
 
     <div class="route-group">
-        Kecskemét → Szeged:
-        <button id="btnRouteKecskemet">Jelzőállítás</button>
+        <button id="btnRouteKecskemet">Kecskemét kijárati jelző szabadra állítás</button>
     </div>
     
 </div>
