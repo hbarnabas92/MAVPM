@@ -130,21 +130,56 @@ button:active{
         z-index: 9999;
     }
 
-    @media (max-width: 700px) {
-        #d55-route-panel, #d55-switch-panel {
-            flex-direction: column;
-            text-align: center;
-        }
+    @media (max-width: 900px) {
 
-        .switch-column {
-            width: 100%;
-            margin-bottom: 20px;
-        }
+    body{
+        overflow-x:hidden;
+    }
 
-        button {
-            padding: 10px 16px;
-            font-size: 16px;
-        }
+    #panel{
+        order:2;
+        font-size:14px;
+    }
+
+    #timer{
+        order:3;
+        margin:0;
+        padding:8px;
+        font-size:18px;
+    }
+
+    #scene{
+        width:100%;
+        height:auto;
+        max-height:55vh;
+        display:block;
+    }
+
+    #d55-route-panel{
+        order:4;
+        flex-direction:column;
+        gap:10px;
+        padding:10px;
+    }
+
+    #d55-switch-panel{
+        order:5;
+        flex-direction:column;
+        gap:10px;
+        padding:10px;
+    }
+
+    .switch-column{
+        width:100%;
+    }
+
+    button{
+        width:100%;
+        margin:4px 0;
+        font-size:18px;
+        padding:12px;
+    }
+}
 
         #scene {
             width: 120%;
