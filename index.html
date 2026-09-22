@@ -124,19 +124,6 @@ button:active{
     transform:translateY(1px);
 }
 
-    #rotateWarning {
-        display: none;
-        position: fixed;
-        top: 15;
-        left: 15;
-        width: 100%;
-        padding: 20px;
-        background: #c6288;
-        color: white;
-        font-size: 0px;
-        text-align: center;
-        z-index: 9999;
-    }
 
     @media (max-width:900px){
 
@@ -399,18 +386,6 @@ function endGame() {
     alert("Lejárt az idő! A játék véget ért.");
 }
 
-// ---------------- ORIENTÁCIÓ FIGYELÉS ----------------
-function checkOrientation() {
-    const warn = document.getElementById("rotateWarning");
-    if (window.innerHeight > window.innerWidth) {
-        warn.style.display = "block";
-    } else {
-        warn.style.display = "none";
-    }
-}
-
-window.addEventListener("resize", checkOrientation);
-window.addEventListener("orientationchange", checkOrientation);
 
 // ---------------- HIBAPONT ----------------
 function addError(msg) {
@@ -895,12 +870,12 @@ function getArrivePath(train) {
         { x: 500, y: 260 },
         { x: 485, y: 215 },
         { x: 445, y: 260 },
-        { x: 430, y: 280 },
+        { x: 430, y: 380 },
         10
     );
     const straight3 = [
-        { x: 430, y: 280 },
-        { x: 230, y: 280 }
+        { x: 430, y: 380 },
+        { x: 230, y: 380 }
     ];
     return bez3.concat(straight3);
 }
