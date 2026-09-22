@@ -206,15 +206,11 @@ button:active{
 </div>
 
 
-        -
-    </div>
-
     <strong>Hibák:</strong>
     <div id="errorBox" style="max-height:90px;overflow-y:auto;">
 
         Nincs hiba.
     </div>
-</div>
 
 <!-- VÁGÁNYRAJZ -->
 <div id="trackContainer">
@@ -742,8 +738,8 @@ function getDepartPath(train) {
         ];
         const bez3 = sampleBezier(
             { x: 430, y: 380 },
-            { x: 435, y: 265 },
-            { x: 445, y: 230 },
+            { x: 438, y: 330 },
+            { x: 445, y: 290 },
             { x: 450, y: 260 },
             10
         );
@@ -838,7 +834,7 @@ function getArrivePath(train) {
         );
         const straight3 = [
             { x: 770, y: 380 },
-            { x: 870, y: 680 }
+            { x: 870, y: 380 }
         ];
         return bez3.concat(straight3);
     }
@@ -1030,7 +1026,6 @@ window.addEventListener("load", () => {
     renderTrains();
     showTask();
     startTimer();
-    checkOrientation();
     requestAnimationFrame(loop);
 });
 </script>
